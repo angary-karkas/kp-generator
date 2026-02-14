@@ -1,0 +1,549 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>Конструктор КП | ЗМК</title>
+    <script src="https://telegram.org/js/telegram-web-app.js"></script>
+    <!-- Индустриальный шрифт -->
+    <link href="https://fonts.googleapis.com/css2?family=Oswald:wght@400;500;700&family=Roboto+Condensed:wght@400;700&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --primary-yellow: #FFD700; /* Сигнальный желтый */
+            --primary-yellow-hover: #e6c200;
+            --bg-dark: #121212;
+            --bg-card: #1E1E1E;
+            --text-main: #FFFFFF;
+            --text-secondary: #B0B0B0;
+            --danger: #FF453A;
+            --border-color: #333;
+        }
+
+        * { box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
+
+        body {
+            font-family: 'Roboto Condensed', sans-serif;
+            background-color: var(--bg-dark);
+            background-image: radial-gradient(circle at top right, #2a2a2a 0%, #121212 60%);
+            color: var(--text-main);
+            margin: 0;
+            padding: 20px;
+            padding-bottom: 80px; /* Место под кнопку */
+        }
+
+        /* Полоса "ОСТОРОЖНО" сверху */
+        .caution-tape {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 5px;
+            background: repeating-linear-gradient(
+                45deg,
+                var(--primary-yellow),
+                var(--primary-yellow) 10px,
+                #000 10px,
+                #000 20px
+            );
+            z-index: 100;
+        }
+
+        h3, h4 {
+            font-family: 'Oswald', sans-serif;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            margin-bottom: 15px;
+            color: var(--primary-yellow);
+        }
+
+        h3 { 
+            font-size: 24px; 
+            border-bottom: 2px solid var(--primary-yellow);
+            padding-bottom: 10px;
+            display: inline-block;
+        }
+
+        /* Стили полей ввода */
+        input, select {
+            width: 100%;
+            padding: 14px;
+            background: var(--bg-card);
+            border: 1px solid var(--border-color);
+            border-radius: 4px;
+            color: var(--text-main);
+            font-size: 16px;
+            font-family: 'Roboto Condensed', sans-serif;
+            margin-bottom: 15px;
+            transition: all 0.3s ease;
+            outline: none;
+        }
+
+        input:focus, select:focus {
+            border-color: var(--primary-yellow);
+            box-shadow: 0 0 10px rgba(255, 215, 0, 0.2);
+        }
+
+        input::placeholder { color: #555; }
+
+        /* Карточка позиции */
+        .item-card {
+            background: var(--bg-card);
+            border-left: 4px solid var(--primary-yellow);
+            padding: 15px;
+            margin-bottom: 15px;
+            border-radius: 0 8px 8px 0;
+            position: relative;
+            animation: slideIn 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+            box-shadow: 0 4px 15px rgba(0,0,0,0.3);
+        }
+
+        @keyframes slideIn {
+            from { opacity: 0; transform: translateX(-20px); }
+            to { opacity: 1; transform: translateX(0); }
+        }
+
+        @keyframes slideOut {
+            to { opacity: 0; transform: translateX(100%); height: 0; margin: 0; padding: 0; }
+        }
+
+        .item-card.removing {
+            animation: slideOut 0.3s forwards;
+        }
+
+        .row-controls {
+            display: flex;
+            gap: 10px;
+            align-items: center;
+            margin-top: 5px;
+        }
+
+        .weight-input-group {
+            flex-grow: 1;
+            position: relative;
+        }
+        
+        .weight-input-group input { margin: 0; }
+        
+        .weight-input-group::after {
+            content: 'ТОНН';
+            position: absolute;
+            right: 10px;
+            top: 50%;
+            transform: translateY(-50%);
+            color: var(--primary-yellow);
+            font-size: 12px;
+            font-weight: bold;
+            pointer-events: none;
+        }
+
+        /* Кнопка удаления */
+        .del-btn {
+            background: #2a2a2a;
+            color: var(--danger);
+            border: 1px solid var(--danger);
+            width: 46px;
+            height: 46px;
+            border-radius: 4px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+            transition: all 0.2s;
+            font-size: 20px;
+        }
+
+        .del-btn:active { background: var(--danger); color: white; }
+
+        /* Кнопка добавления */
+        .add-btn {
+            background: transparent;
+            border: 2px dashed var(--primary-yellow);
+            color: var(--primary-yellow);
+            width: 100%;
+            padding: 15px;
+            border-radius: 8px;
+            font-family: 'Oswald', sans-serif;
+            font-size: 16px;
+            text-transform: uppercase;
+            cursor: pointer;
+            transition: 0.3s;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 10px;
+        }
+
+        .add-btn:active {
+            background: rgba(255, 215, 0, 0.1);
+            transform: scale(0.98);
+        }
+
+        /* Тумблеры (Checkboxes) */
+        .options-container {
+            background: var(--bg-card);
+            padding: 15px;
+            border-radius: 8px;
+            margin-top: 20px;
+            border: 1px solid var(--border-color);
+        }
+
+        .checkbox-wrapper {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 10px;
+        }
+        
+        .checkbox-wrapper:last-child { margin-bottom: 0; }
+
+        .checkbox-label {
+            font-size: 16px;
+            font-weight: 500;
+        }
+
+        .switch {
+            position: relative;
+            display: inline-block;
+            width: 50px;
+            height: 28px;
+        }
+
+        .switch input { opacity: 0; width: 0; height: 0; }
+
+        .slider {
+            position: absolute;
+            cursor: pointer;
+            top: 0; left: 0; right: 0; bottom: 0;
+            background-color: #333;
+            transition: .4s;
+            border-radius: 34px;
+        }
+
+        .slider:before {
+            position: absolute;
+            content: "";
+            height: 20px;
+            width: 20px;
+            left: 4px;
+            bottom: 4px;
+            background-color: white;
+            transition: .4s;
+            border-radius: 50%;
+        }
+
+        input:checked + .slider { background-color: var(--primary-yellow); }
+        input:checked + .slider:before { transform: translateX(22px); background-color: #000; }
+
+        /* Главная кнопка */
+        #main-btn-container {
+            position: fixed;
+            bottom: 20px;
+            left: 20px;
+            right: 20px;
+            z-index: 99;
+        }
+
+        #main-btn {
+            width: 100%;
+            padding: 18px;
+            border: none;
+            background: var(--primary-yellow);
+            color: #000;
+            font-family: 'Oswald', sans-serif;
+            font-size: 20px;
+            font-weight: bold;
+            text-transform: uppercase;
+            border-radius: 4px; /* Индустриальный квадратный стиль */
+            cursor: pointer;
+            box-shadow: 0 0 20px rgba(255, 215, 0, 0.4);
+            clip-path: polygon(10px 0, 100% 0, 100% calc(100% - 10px), calc(100% - 10px) 100%, 0 100%, 0 10px); /* Срезанные углы */
+            transition: transform 0.2s;
+            position: relative;
+            overflow: hidden;
+            display: none; /* Скрыто по умолчанию */
+        }
+        
+        /* Эффект блика на кнопке */
+        #main-btn::after {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: -100%;
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(90deg, transparent, rgba(255,255,255,0.4), transparent);
+            animation: shine 3s infinite;
+        }
+
+        @keyframes shine {
+            0% { left: -100%; }
+            20% { left: 100%; }
+            100% { left: 100%; }
+        }
+
+        #main-btn:active { transform: scale(0.96); }
+
+        .hint { color: #666; font-size: 13px; margin-top: 10px; text-align: center; }
+        
+        /* Select styling hack for dark mode */
+        select {
+            -webkit-appearance: none;
+            -moz-appearance: none;
+            appearance: none;
+            background-image: url("data:image/svg+xml;charset=US-ASCII,%3Csvg%20xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22%20width%3D%22292.4%22%20height%3D%22292.4%22%3E%3Cpath%20fill%3D%22%23FFD700%22%20d%3D%22M287%2069.4a17.6%2017.6%200%200%200-13-5.4H18.4c-5%200-9.3%201.8-12.9%205.4A17.6%2017.6%200%200%200%200%2082.2c0%205%201.8%209.3%205.4%2012.9l128%20127.9c3.6%203.6%207.8%205.4%2012.8%205.4s9.2-1.8%2012.8-5.4L287%2095c3.5-3.5%205.4-7.8%205.4-12.8%200-5-1.9-9.2-5.5-12.8z%22%2F%3E%3C%2Fsvg%3E");
+            background-repeat: no-repeat;
+            background-position: right 15px top 50%;
+            background-size: 12px auto;
+        }
+        
+        optgroup { color: #888; font-style: normal; font-weight: bold; }
+        option { background-color: #222; color: white; padding: 10px; }
+
+    </style>
+</head>
+<body>
+
+    <div class="caution-tape"></div>
+
+    <h3>Данные проекта</h3>
+    <input type="text" id="objectName" placeholder="Название объекта (напр. Склад Wildberries)">
+    <input type="text" id="clientName" placeholder="Заказчик / Контактное лицо">
+
+    <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 15px;">
+        <h3>Спецификация</h3>
+        <span style="font-size: 12px; color: #666; border: 1px solid #444; padding: 2px 6px; border-radius: 4px;" id="count-badge">0 ПОЗИЦИЙ</span>
+    </div>
+
+    <div id="items-container">
+        <!-- Сюда добавляются карточки -->
+    </div>
+
+    <button class="add-btn" onclick="addItem()">
+        <span style="font-size: 24px;">+</span> ДОБАВИТЬ МЕТАЛЛ
+    </button>
+    <div class="hint">Выберите профиль из сортамента и укажите тоннаж</div>
+
+    <div class="options-container">
+        <div class="checkbox-wrapper">
+            <span class="checkbox-label">Антикоррозия (ГФ-021)</span>
+            <label class="switch">
+                <input type="checkbox" id="painting">
+                <span class="slider"></span>
+            </label>
+        </div>
+        <div class="checkbox-wrapper">
+            <span class="checkbox-label">Включить доставку</span>
+            <label class="switch">
+                <input type="checkbox" id="delivery">
+                <span class="slider"></span>
+            </label>
+        </div>
+        <div class="checkbox-wrapper">
+            <span class="checkbox-label">Монтаж металлокаркаса</span>
+            <label class="switch">
+                <input type="checkbox" id="montage">
+                <span class="slider"></span>
+            </label>
+        </div>
+    </div>
+
+    <div id="main-btn-container">
+        <button id="main-btn" onclick="sendData()">Сформировать КП</button>
+    </div>
+
+    <script>
+        let tg = window.Telegram.WebApp;
+        tg.expand();
+        // Включаем темную тему принудительно для консистентности, либо берем из стилей
+        tg.setHeaderColor('#121212'); 
+        tg.setBackgroundColor('#121212');
+
+        const metalCatalog = [
+            // --- Балки (двутавры) ---
+            { code: "B-10B1", group: "Балка двутавровая", label: "10Б1 (С255) ГОСТ Р 57837-2017" },
+            { code: "B-20B1", group: "Балка двутавровая", label: "20Б1 (С255) ГОСТ Р 57837-2017" },
+            { code: "B-20K1", group: "Балка двутавровая", label: "20К1 (С255) ГОСТ Р 57837-2017" },
+            { code: "B-25B1", group: "Балка двутавровая", label: "25Б1 (С255) ГОСТ Р 57837-2017" },
+            { code: "B-25SH1", group: "Балка двутавровая", label: "25Ш1 (С255) ГОСТ Р 57837-2017" },
+            { code: "B-30B1", group: "Балка двутавровая", label: "30Б1 (С255) ГОСТ Р 57837-2017" },
+            { code: "B-35B1", group: "Балка двутавровая", label: "35Б1 (С255) ГОСТ Р 57837-2017" },
+            { code: "B-40K1", group: "Балка двутавровая", label: "40К1 (С255) ГОСТ Р 57837-2017" },
+            
+            // --- Швеллеры ---
+            { code: "C-10P", group: "Швеллер", label: "Швеллер 10П (С255) ГОСТ 8240-97" },
+            { code: "C-12P", group: "Швеллер", label: "Швеллер 12П (С255) ГОСТ 8240-97" },
+            { code: "C-16P", group: "Швеллер", label: "Швеллер 16П (С255) ГОСТ 8240-97" },
+            { code: "C-20P", group: "Швеллер", label: "Швеллер 20П (С255) ГОСТ 8240-97" },
+            { code: "C-24P", group: "Швеллер", label: "Швеллер 24П (С255) ГОСТ 8240-97" },
+
+            // --- Труба профильная (добавил, так как часто нужны для ангаров) ---
+            { code: "T-80x80x4", group: "Труба Профильная", label: "Труба 80х80х4 (С245)" },
+            { code: "T-100x100x4", group: "Труба Профильная", label: "Труба 100х100х4 (С245)" },
+            { code: "T-120x120x5", group: "Труба Профильная", label: "Труба 120х120х5 (С345)" },
+            { code: "T-140x140x5", group: "Труба Профильная", label: "Труба 140х140х5 (С345)" },
+
+            // --- Уголки ---
+            { code: "A-50x5", group: "Уголок", label: "Уголок 50х5 (С255)" },
+            { code: "A-63x5", group: "Уголок", label: "Уголок 63х5 (С255)" },
+            { code: "A-75x6", group: "Уголок", label: "Уголок 75х6 (С255)" },
+            { code: "A-100x8", group: "Уголок", label: "Уголок 100х8 (С255)" },
+
+            // --- Лист ---
+            { code: "S-4", group: "Лист г/к", label: "Лист 4мм (С245)" },
+            { code: "S-6", group: "Лист г/к", label: "Лист 6мм (С255)" },
+            { code: "S-8", group: "Лист г/к", label: "Лист 8мм (С255)" },
+            { code: "S-10", group: "Лист г/к", label: "Лист 10мм (С255)" },
+            { code: "S-16", group: "Лист г/к", label: "Лист 16мм (С255)" },
+            { code: "S-20", group: "Лист г/к", label: "Лист 20мм (С345)" }
+        ];
+
+        // Кэшируем HTML селекта для производительности
+        let cachedSelectHTML = '';
+
+        function buildSelectHTML() {
+            if (cachedSelectHTML) return cachedSelectHTML;
+
+            let html = '<select class="metal-type">';
+            html += '<option value="" disabled selected>Выберите позицию...</option>';
+            
+            const groups = {};
+            metalCatalog.forEach(item => {
+                if (!groups[item.group]) groups[item.group] = [];
+                groups[item.group].push(item);
+            });
+
+            Object.keys(groups).forEach(groupName => {
+                html += `<optgroup label="${groupName}">`;
+                groups[groupName].forEach(it => {
+                    html += `<option value="${it.code}">${it.label}</option>`;
+                });
+                html += `</optgroup>`;
+            });
+            html += '</select>';
+            cachedSelectHTML = html;
+            return html;
+        }
+
+        function addItem() {
+            // Haptic feedback
+            if(tg.HapticFeedback) tg.HapticFeedback.impactOccurred('light');
+
+            const container = document.getElementById('items-container');
+            const div = document.createElement('div');
+            div.className = 'item-card';
+
+            div.innerHTML = `
+                ${buildSelectHTML()}
+                <div class="row-controls">
+                    <div class="weight-input-group">
+                        <input type="number" class="metal-weight" placeholder="0.00" step="0.1" min="0">
+                    </div>
+                    <div class="del-btn" onclick="removeItem(this)">
+                        <span>&times;</span>
+                    </div>
+                </div>
+            `;
+            container.appendChild(div);
+            updateCount();
+            
+            // Плавный скролл к новому элементу
+            div.scrollIntoView({ behavior: 'smooth', block: 'center' });
+        }
+
+        function removeItem(btn) {
+            if(tg.HapticFeedback) tg.HapticFeedback.impactOccurred('medium');
+            const card = btn.closest('.item-card');
+            card.classList.add('removing');
+            setTimeout(() => {
+                card.remove();
+                updateCount();
+            }, 300); // Ждем окончания анимации
+        }
+
+        function updateCount() {
+            const count = document.getElementsByClassName('item-card').length;
+            const btn = document.getElementById('main-btn');
+            const badge = document.getElementById('count-badge');
+            
+            btn.style.display = count > 0 ? 'block' : 'none';
+            badge.innerText = count + ' ' + declension(count, ['ПОЗИЦИЯ', 'ПОЗИЦИИ', 'ПОЗИЦИЙ']);
+        }
+        
+        // Склонение слов
+        function declension(number, titles) {
+            const cases = [2, 0, 1, 1, 1, 2];
+            return titles[(number % 100 > 4 && number % 100 < 20) ? 2 : cases[(number % 10 < 5) ? number % 10 : 5]];
+        }
+
+        function sendData() {
+            const objName = document.getElementById('objectName').value;
+            const clientName = document.getElementById('clientName').value;
+            
+            if (!objName) {
+                if(tg.HapticFeedback) tg.HapticFeedback.notificationOccurred('error');
+                tg.showPopup({title: 'Внимание!', message: 'Укажите название объекта для заголовка КП.'});
+                document.getElementById('objectName').focus();
+                return;
+            }
+
+            let items = [];
+            let isValid = true;
+
+            document.querySelectorAll('.item-card').forEach(card => {
+                const code = card.querySelector('.metal-type').value;
+                const weight = parseFloat(card.querySelector('.metal-weight').value);
+                const selectElem = card.querySelector('.metal-type');
+                const inputElem = card.querySelector('.metal-weight');
+
+                // Простая валидация
+                if (!code) {
+                    selectElem.style.borderColor = 'red';
+                    isValid = false;
+                } else {
+                    selectElem.style.borderColor = '#333';
+                }
+
+                if (!weight || weight <= 0) {
+                    inputElem.style.borderColor = 'red';
+                    isValid = false;
+                } else {
+                    inputElem.style.borderColor = '#333';
+                }
+
+                if (code && weight) {
+                    const found = metalCatalog.find(x => x.code === code);
+                    items.push({
+                        code: code,
+                        name: found ? found.label : code,
+                        weight: weight
+                    });
+                }
+            });
+
+            if (!isValid) {
+                 if(tg.HapticFeedback) tg.HapticFeedback.notificationOccurred('warning');
+                 tg.showPopup({title: 'Ошибка', message: 'Заполните все поля (выберите металл и укажите вес).'});
+                 return;
+            }
+
+            const data = {
+                object_name: objName,
+                client_name: clientName,
+                items: items,
+                options: {
+                    painting: document.getElementById('painting').checked,
+                    delivery: document.getElementById('delivery').checked,
+                    montage: document.getElementById('montage').checked
+                },
+                timestamp: new Date().toISOString()
+            };
+
+            if(tg.HapticFeedback) tg.HapticFeedback.notificationOccurred('success');
+            tg.sendData(JSON.stringify(data));
+        }
+
+        // Добавляем первую строку при старте
+        // setTimeout(addItem, 300); 
+    </script>
+</body>
+</html>
