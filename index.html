@@ -1,16 +1,14 @@
 <!DOCTYPE html>
 <html lang="ru">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
     <title>Конструктор КП | ЗМК</title>
     <script src="https://telegram.org/js/telegram-web-app.js"></script>
-    <!-- Индустриальный шрифт -->
-    <link href="https://fonts.googleapis.com/css2?family=Oswald:wght@400;500;700&family=Roboto+Condensed:wght@400;700&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Oswald:wght@400;500;700&family=Roboto+Condensed:wght@400;700&display=swap" rel="stylesheet" />
     <style>
         :root {
-            --primary-yellow: #FFD700; /* Сигнальный желтый */
-            --primary-yellow-hover: #e6c200;
+            --primary-yellow: #FFD700;
             --bg-dark: #121212;
             --bg-card: #1E1E1E;
             --text-main: #FFFFFF;
@@ -22,20 +20,18 @@
         * { box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
 
         body {
-            font-family: 'Roboto Condensed', sans-serif;
+            font-family: "Roboto Condensed", sans-serif;
             background-color: var(--bg-dark);
             background-image: radial-gradient(circle at top right, #2a2a2a 0%, #121212 60%);
             color: var(--text-main);
             margin: 0;
             padding: 20px;
-            padding-bottom: 80px; /* Место под кнопку */
+            padding-bottom: 170px; /* место под итог + кнопку */
         }
 
-        /* Полоса "ОСТОРОЖНО" сверху */
         .caution-tape {
             position: fixed;
-            top: 0;
-            left: 0;
+            top: 0; left: 0;
             width: 100%;
             height: 5px;
             background: repeating-linear-gradient(
@@ -48,22 +44,20 @@
             z-index: 100;
         }
 
-        h3, h4 {
-            font-family: 'Oswald', sans-serif;
+        h3 {
+            font-family: "Oswald", sans-serif;
             text-transform: uppercase;
             letter-spacing: 1px;
             margin-bottom: 15px;
             color: var(--primary-yellow);
-        }
-
-        h3 { 
-            font-size: 24px; 
+            font-size: 24px;
             border-bottom: 2px solid var(--primary-yellow);
-            padding-bottom: 10px;
+            padding-bottom: 5px;
             display: inline-block;
+            margin-top: 25px;
         }
+        h3:first-of-type { margin-top: 0; }
 
-        /* Стили полей ввода */
         input, select {
             width: 100%;
             padding: 14px;
@@ -72,9 +66,9 @@
             border-radius: 4px;
             color: var(--text-main);
             font-size: 16px;
-            font-family: 'Roboto Condensed', sans-serif;
+            font-family: "Roboto Condensed", sans-serif;
             margin-bottom: 15px;
-            transition: all 0.3s ease;
+            transition: all 0.25s ease;
             outline: none;
         }
 
@@ -83,9 +77,19 @@
             box-shadow: 0 0 10px rgba(255, 215, 0, 0.2);
         }
 
-        input::placeholder { color: #555; }
+        select {
+            -webkit-appearance: none;
+            -moz-appearance: none;
+            appearance: none;
+            background-image: url("data:image/svg+xml;charset=US-ASCII,%3Csvg%20xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22%20width%3D%22292.4%22%20height%3D%22292.4%22%3E%3Cpath%20fill%3D%22%23FFD700%22%20d%3D%22M287%2069.4a17.6%2017.6%200%200%200-13-5.4H18.4c-5%200-9.3%201.8-12.9%205.4A17.6%2017.6%200%200%200%200%2082.2c0%205%201.8%209.3%205.4%2012.9l128%20127.9c3.6%203.6%207.8%205.4%2012.8%205.4s9.2-1.8%2012.8-5.4L287%2095c3.5-3.5%205.4-7.8%205.4-12.8%200-5-1.9-9.2-5.5-12.8z%22%2F%3E%3C%2Fsvg%3E");
+            background-repeat: no-repeat;
+            background-position: right 15px top 50%;
+            background-size: 12px auto;
+        }
 
-        /* Карточка позиции */
+        optgroup { color: #888; font-weight: bold; background: #111; }
+        option { background-color: #222; color: white; padding: 10px; }
+
         .item-card {
             background: var(--bg-card);
             border-left: 4px solid var(--primary-yellow);
@@ -95,6 +99,28 @@
             position: relative;
             animation: slideIn 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
             box-shadow: 0 4px 15px rgba(0,0,0,0.3);
+            overflow: hidden;
+        }
+
+        /* Скан-линия для техно-эффекта */
+        .item-card::after {
+            content: "";
+            position: absolute;
+            left: 0;
+            right: 0;
+            top: -30%;
+            height: 40%;
+            background: linear-gradient(180deg, transparent, rgba(255,215,0,0.08), transparent);
+            filter: blur(0.3px);
+            animation: scanline 4.5s linear infinite;
+            pointer-events: none;
+        }
+
+        @keyframes scanline {
+            0% { top: -40%; opacity: 0; }
+            10% { opacity: 1; }
+            60% { opacity: 1; }
+            100% { top: 120%; opacity: 0; }
         }
 
         @keyframes slideIn {
@@ -106,9 +132,7 @@
             to { opacity: 0; transform: translateX(100%); height: 0; margin: 0; padding: 0; }
         }
 
-        .item-card.removing {
-            animation: slideOut 0.3s forwards;
-        }
+        .item-card.removing { animation: slideOut 0.3s forwards; }
 
         .row-controls {
             display: flex;
@@ -117,15 +141,11 @@
             margin-top: 5px;
         }
 
-        .weight-input-group {
-            flex-grow: 1;
-            position: relative;
-        }
-        
+        .weight-input-group { flex-grow: 1; position: relative; }
         .weight-input-group input { margin: 0; }
-        
+
         .weight-input-group::after {
-            content: 'ТОНН';
+            content: "ТОНН";
             position: absolute;
             right: 10px;
             top: 50%;
@@ -136,7 +156,6 @@
             pointer-events: none;
         }
 
-        /* Кнопка удаления */
         .del-btn {
             background: #2a2a2a;
             color: var(--danger);
@@ -150,11 +169,10 @@
             cursor: pointer;
             transition: all 0.2s;
             font-size: 20px;
+            user-select: none;
         }
+        .del-btn:active { background: var(--danger); color: #fff; transform: scale(0.98); }
 
-        .del-btn:active { background: var(--danger); color: white; }
-
-        /* Кнопка добавления */
         .add-btn {
             background: transparent;
             border: 2px dashed var(--primary-yellow);
@@ -162,23 +180,19 @@
             width: 100%;
             padding: 15px;
             border-radius: 8px;
-            font-family: 'Oswald', sans-serif;
+            font-family: "Oswald", sans-serif;
             font-size: 16px;
             text-transform: uppercase;
             cursor: pointer;
-            transition: 0.3s;
             display: flex;
             align-items: center;
             justify-content: center;
             gap: 10px;
+            position: relative;
+            overflow: hidden;
         }
+        .add-btn:active { background: rgba(255, 215, 0, 0.1); transform: scale(0.98); }
 
-        .add-btn:active {
-            background: rgba(255, 215, 0, 0.1);
-            transform: scale(0.98);
-        }
-
-        /* Тумблеры (Checkboxes) */
         .options-container {
             background: var(--bg-card);
             padding: 15px;
@@ -191,50 +205,40 @@
             display: flex;
             justify-content: space-between;
             align-items: center;
-            margin-bottom: 10px;
+            margin-bottom: 15px;
+            padding-bottom: 10px;
+            border-bottom: 1px solid #333;
         }
-        
-        .checkbox-wrapper:last-child { margin-bottom: 0; }
+        .checkbox-wrapper:last-child { margin-bottom: 0; border-bottom: none; padding-bottom: 0; }
 
-        .checkbox-label {
-            font-size: 16px;
-            font-weight: 500;
-        }
+        .checkbox-label { font-size: 16px; font-weight: 500; }
 
-        .switch {
-            position: relative;
-            display: inline-block;
-            width: 50px;
-            height: 28px;
-        }
-
+        .switch { position: relative; display: inline-block; width: 50px; height: 28px; }
         .switch input { opacity: 0; width: 0; height: 0; }
-
         .slider {
             position: absolute;
             cursor: pointer;
             top: 0; left: 0; right: 0; bottom: 0;
             background-color: #333;
-            transition: .4s;
+            transition: .25s;
             border-radius: 34px;
         }
-
         .slider:before {
             position: absolute;
             content: "";
-            height: 20px;
-            width: 20px;
-            left: 4px;
-            bottom: 4px;
-            background-color: white;
-            transition: .4s;
+            height: 20px; width: 20px;
+            left: 4px; bottom: 4px;
+            background-color: #fff;
+            transition: .25s;
             border-radius: 50%;
         }
-
         input:checked + .slider { background-color: var(--primary-yellow); }
         input:checked + .slider:before { transform: translateX(22px); background-color: #000; }
 
-        /* Главная кнопка */
+        .hint { color: #666; font-size: 13px; margin-top: 10px; text-align: center; }
+        .section-label { color: var(--primary-yellow); font-size: 14px; margin-bottom: 5px; display: block; font-weight: bold; }
+
+        /* Нижняя зона: итог + кнопка */
         #main-btn-container {
             position: fixed;
             bottom: 20px;
@@ -243,34 +247,49 @@
             z-index: 99;
         }
 
+        #live-summary {
+            margin: 0 0 10px 0;
+            background: #1E1E1E;
+            border: 1px solid #333;
+            border-radius: 8px;
+            padding: 10px 12px;
+            display: flex;
+            justify-content: space-between;
+            gap: 10px;
+            align-items: center;
+            box-shadow: 0 6px 18px rgba(0,0,0,0.35);
+        }
+
         #main-btn {
             width: 100%;
             padding: 18px;
             border: none;
             background: var(--primary-yellow);
             color: #000;
-            font-family: 'Oswald', sans-serif;
+            font-family: "Oswald", sans-serif;
             font-size: 20px;
             font-weight: bold;
             text-transform: uppercase;
-            border-radius: 4px; /* Индустриальный квадратный стиль */
+            border-radius: 4px;
             cursor: pointer;
             box-shadow: 0 0 20px rgba(255, 215, 0, 0.4);
-            clip-path: polygon(10px 0, 100% 0, 100% calc(100% - 10px), calc(100% - 10px) 100%, 0 100%, 0 10px); /* Срезанные углы */
-            transition: transform 0.2s;
+            clip-path: polygon(10px 0, 100% 0, 100% calc(100% - 10px), calc(100% - 10px) 100%, 0 100%, 0 10px);
+            transition: transform 0.2s, opacity 0.2s;
             position: relative;
             overflow: hidden;
-            display: none; /* Скрыто по умолчанию */
         }
-        
-        /* Эффект блика на кнопке */
+
+        #main-btn[disabled] {
+            opacity: 0.55;
+            cursor: not-allowed;
+        }
+
+        /* Блик по кнопке */
         #main-btn::after {
-            content: '';
+            content: "";
             position: absolute;
-            top: 0;
-            left: -100%;
-            width: 100%;
-            height: 100%;
+            top: 0; left: -100%;
+            width: 100%; height: 100%;
             background: linear-gradient(90deg, transparent, rgba(255,255,255,0.4), transparent);
             animation: shine 3s infinite;
         }
@@ -283,267 +302,348 @@
 
         #main-btn:active { transform: scale(0.96); }
 
-        .hint { color: #666; font-size: 13px; margin-top: 10px; text-align: center; }
-        
-        /* Select styling hack for dark mode */
-        select {
-            -webkit-appearance: none;
-            -moz-appearance: none;
-            appearance: none;
-            background-image: url("data:image/svg+xml;charset=US-ASCII,%3Csvg%20xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22%20width%3D%22292.4%22%20height%3D%22292.4%22%3E%3Cpath%20fill%3D%22%23FFD700%22%20d%3D%22M287%2069.4a17.6%2017.6%200%200%200-13-5.4H18.4c-5%200-9.3%201.8-12.9%205.4A17.6%2017.6%200%200%200%200%2082.2c0%205%201.8%209.3%205.4%2012.9l128%20127.9c3.6%203.6%207.8%205.4%2012.8%205.4s9.2-1.8%2012.8-5.4L287%2095c3.5-3.5%205.4-7.8%205.4-12.8%200-5-1.9-9.2-5.5-12.8z%22%2F%3E%3C%2Fsvg%3E");
-            background-repeat: no-repeat;
-            background-position: right 15px top 50%;
-            background-size: 12px auto;
+        /* Искры */
+        .spark {
+            position: fixed;
+            width: 6px;
+            height: 6px;
+            background: var(--primary-yellow);
+            border-radius: 2px;
+            box-shadow: 0 0 10px rgba(255,215,0,0.7);
+            pointer-events: none;
+            z-index: 9999;
+            animation: sparkFly 550ms ease-out forwards;
         }
-        
-        optgroup { color: #888; font-style: normal; font-weight: bold; }
-        option { background-color: #222; color: white; padding: 10px; }
 
+        @keyframes sparkFly {
+            0% { transform: translate(0,0) rotate(0deg) scale(1); opacity: 1; }
+            100% { transform: translate(var(--dx), var(--dy)) rotate(160deg) scale(0.4); opacity: 0; }
+        }
+
+        /* Респект людям, которым тяжело от анимаций */
+        @media (prefers-reduced-motion: reduce) {
+            .item-card::after { animation: none; }
+            #main-btn::after { animation: none; }
+            .spark { display: none; }
+        }
     </style>
 </head>
-<body>
 
+<body>
     <div class="caution-tape"></div>
 
-    <h3>Данные проекта</h3>
-    <input type="text" id="objectName" placeholder="Название объекта (напр. Склад Wildberries)">
-    <input type="text" id="clientName" placeholder="Заказчик / Контактное лицо">
+    <h3>ДАННЫЕ ОБЪЕКТА</h3>
+    <input type="text" id="objectName" placeholder="Название объекта (напр. Цех в Балашихе)" />
+    <input type="text" id="objectAddress" placeholder="Адрес объекта (для шапки КП)" />
 
-    <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 15px;">
-        <h3>Спецификация</h3>
-        <span style="font-size: 12px; color: #666; border: 1px solid #444; padding: 2px 6px; border-radius: 4px;" id="count-badge">0 ПОЗИЦИЙ</span>
+    <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom: 15px;">
+        <h3>СПЕЦИФИКАЦИЯ</h3>
+        <span style="font-size:12px; color:#666; border:1px solid #444; padding:2px 6px; border-radius:4px;" id="count-badge">0 ПОЗ.</span>
     </div>
 
-    <div id="items-container">
-        <!-- Сюда добавляются карточки -->
-    </div>
+    <div id="items-container"></div>
 
-    <button class="add-btn" onclick="addItem()">
-        <span style="font-size: 24px;">+</span> ДОБАВИТЬ МЕТАЛЛ
+    <button class="add-btn" id="add-btn" type="button">
+        <span style="font-size:24px;">+</span> ДОБАВИТЬ МЕТАЛЛ
     </button>
-    <div class="hint">Выберите профиль из сортамента и укажите тоннаж</div>
+    <div class="hint">Выберите профиль и укажите вес в тоннах</div>
 
+    <h3>УСЛОВИЯ И УСЛУГИ</h3>
     <div class="options-container">
+        <span class="section-label">СРОК ИЗГОТОВЛЕНИЯ</span>
+        <input type="number" id="production_time" placeholder="Раб. дней (напр. 20)" style="margin-bottom: 20px;" />
+
+        <span class="section-label">АНТИКОРРОЗИЙНАЯ ЗАЩИТА</span>
+        <select id="painting_type">
+            <option value="none">Без покраски</option>
+            <option value="gf021">Грунтование ГФ-021 (2 слоя)</option>
+            <option value="pf115">Эмаль ПФ-115 (2 слоя)</option>
+        </select>
+
         <div class="checkbox-wrapper">
-            <span class="checkbox-label">Антикоррозия (ГФ-021)</span>
+            <span class="checkbox-label">Разработка чертежей КМД</span>
             <label class="switch">
-                <input type="checkbox" id="painting">
+                <input type="checkbox" id="include_kmd" checked />
                 <span class="slider"></span>
             </label>
         </div>
+
         <div class="checkbox-wrapper">
-            <span class="checkbox-label">Включить доставку</span>
+            <span class="checkbox-label">Монтаж металлоконструкций</span>
             <label class="switch">
-                <input type="checkbox" id="delivery">
+                <input type="checkbox" id="include_montage" />
                 <span class="slider"></span>
             </label>
         </div>
-        <div class="checkbox-wrapper">
-            <span class="checkbox-label">Монтаж металлокаркаса</span>
-            <label class="switch">
-                <input type="checkbox" id="montage">
-                <span class="slider"></span>
-            </label>
+
+        <div style="border-top:1px solid #333; padding-top:15px; margin-top:10px;">
+            <span class="section-label">ЛОГИСТИКА</span>
+            <div style="display:flex; gap:10px; align-items:center;">
+                <div style="flex-grow:1;">Стоимость рейса (руб):</div>
+                <input type="number" id="delivery_price" value="40000" style="width:120px; margin-bottom:0;" />
+            </div>
+            <div class="hint" style="text-align:left; margin-top:5px;">(Кол-во машин рассчитается автоматически)</div>
         </div>
     </div>
 
     <div id="main-btn-container">
-        <button id="main-btn" onclick="sendData()">Сформировать КП</button>
+        <div id="live-summary">
+            <div style="color:#B0B0B0; font-size:13px;">ИТОГ</div>
+            <div style="text-align:right;">
+                <div id="sum-weight" style="color:#FFD700; font-weight:700; font-size:14px;">0.000 ТОНН</div>
+                <div id="sum-trucks" style="color:#B0B0B0; font-size:12px;">0 РЕЙСОВ</div>
+            </div>
+        </div>
+
+        <button id="main-btn" type="button" onclick="sendData()" disabled>ЗАПОЛНИТЕ ДАННЫЕ</button>
     </div>
 
     <script>
-        let tg = window.Telegram.WebApp;
+        // Telegram WebApp
+        const tg = window.Telegram.WebApp;
         tg.expand();
-        // Включаем темную тему принудительно для консистентности, либо берем из стилей
-        tg.setHeaderColor('#121212'); 
-        tg.setBackgroundColor('#121212');
+        tg.setHeaderColor("#121212");
+        tg.setBackgroundColor("#121212");
 
+        // Каталог металла
         const metalCatalog = [
-            // --- Балки (двутавры) ---
-            { code: "B-10B1", group: "Балка двутавровая", label: "10Б1 (С255) ГОСТ Р 57837-2017" },
-            { code: "B-20B1", group: "Балка двутавровая", label: "20Б1 (С255) ГОСТ Р 57837-2017" },
-            { code: "B-20K1", group: "Балка двутавровая", label: "20К1 (С255) ГОСТ Р 57837-2017" },
-            { code: "B-25B1", group: "Балка двутавровая", label: "25Б1 (С255) ГОСТ Р 57837-2017" },
-            { code: "B-25SH1", group: "Балка двутавровая", label: "25Ш1 (С255) ГОСТ Р 57837-2017" },
-            { code: "B-30B1", group: "Балка двутавровая", label: "30Б1 (С255) ГОСТ Р 57837-2017" },
-            { code: "B-35B1", group: "Балка двутавровая", label: "35Б1 (С255) ГОСТ Р 57837-2017" },
-            { code: "B-40K1", group: "Балка двутавровая", label: "40К1 (С255) ГОСТ Р 57837-2017" },
-            
-            // --- Швеллеры ---
-            { code: "C-10P", group: "Швеллер", label: "Швеллер 10П (С255) ГОСТ 8240-97" },
-            { code: "C-12P", group: "Швеллер", label: "Швеллер 12П (С255) ГОСТ 8240-97" },
-            { code: "C-16P", group: "Швеллер", label: "Швеллер 16П (С255) ГОСТ 8240-97" },
-            { code: "C-20P", group: "Швеллер", label: "Швеллер 20П (С255) ГОСТ 8240-97" },
-            { code: "C-24P", group: "Швеллер", label: "Швеллер 24П (С255) ГОСТ 8240-97" },
+            { code: "B-20B1", group: "Балка двутавровая", label: "Балка 20Б1 (С255)" },
+            { code: "B-25B1", group: "Балка двутавровая", label: "Балка 25Б1 (С255)" },
+            { code: "B-30B1", group: "Балка двутавровая", label: "Балка 30Б1 (С255)" },
+            { code: "B-35B1", group: "Балка двутавровая", label: "Балка 35Б1 (С255)" },
+            { code: "B-40K1", group: "Балка двутавровая", label: "Балка 40К1 (С255)" },
 
-            // --- Труба профильная (добавил, так как часто нужны для ангаров) ---
-            { code: "T-80x80x4", group: "Труба Профильная", label: "Труба 80х80х4 (С245)" },
-            { code: "T-100x100x4", group: "Труба Профильная", label: "Труба 100х100х4 (С245)" },
-            { code: "T-120x120x5", group: "Труба Профильная", label: "Труба 120х120х5 (С345)" },
-            { code: "T-140x140x5", group: "Труба Профильная", label: "Труба 140х140х5 (С345)" },
+            { code: "C-16P", group: "Швеллер", label: "Швеллер 16П (С255)" },
+            { code: "C-20P", group: "Швеллер", label: "Швеллер 20П (С255)" },
+            { code: "C-24P", group: "Швеллер", label: "Швеллер 24П (С255)" },
 
-            // --- Уголки ---
-            { code: "A-50x5", group: "Уголок", label: "Уголок 50х5 (С255)" },
-            { code: "A-63x5", group: "Уголок", label: "Уголок 63х5 (С255)" },
-            { code: "A-75x6", group: "Уголок", label: "Уголок 75х6 (С255)" },
-            { code: "A-100x8", group: "Уголок", label: "Уголок 100х8 (С255)" },
+            { code: "T-80x80x4", group: "Труба профильная", label: "Труба 80х80х4" },
+            { code: "T-100x100x4", group: "Труба профильная", label: "Труба 100х100х4" },
+            { code: "T-120x120x5", group: "Труба профильная", label: "Труба 120х120х5" },
+            { code: "T-140x140x5", group: "Труба профильная", label: "Труба 140х140х5" },
 
-            // --- Лист ---
-            { code: "S-4", group: "Лист г/к", label: "Лист 4мм (С245)" },
-            { code: "S-6", group: "Лист г/к", label: "Лист 6мм (С255)" },
-            { code: "S-8", group: "Лист г/к", label: "Лист 8мм (С255)" },
             { code: "S-10", group: "Лист г/к", label: "Лист 10мм (С255)" },
             { code: "S-16", group: "Лист г/к", label: "Лист 16мм (С255)" },
             { code: "S-20", group: "Лист г/к", label: "Лист 20мм (С345)" }
         ];
 
-        // Кэшируем HTML селекта для производительности
-        let cachedSelectHTML = '';
+        // Кэш для селекта
+        let cachedSelectHTML = "";
 
         function buildSelectHTML() {
             if (cachedSelectHTML) return cachedSelectHTML;
 
             let html = '<select class="metal-type">';
-            html += '<option value="" disabled selected>Выберите позицию...</option>';
-            
+            html += '<option value="" disabled selected>Выберите металл...</option>';
+
             const groups = {};
-            metalCatalog.forEach(item => {
+            metalCatalog.forEach((item) => {
                 if (!groups[item.group]) groups[item.group] = [];
                 groups[item.group].push(item);
             });
 
-            Object.keys(groups).forEach(groupName => {
+            Object.keys(groups).forEach((groupName) => {
                 html += `<optgroup label="${groupName}">`;
-                groups[groupName].forEach(it => {
+                groups[groupName].forEach((it) => {
                     html += `<option value="${it.code}">${it.label}</option>`;
                 });
                 html += `</optgroup>`;
             });
-            html += '</select>';
+
+            html += "</select>";
             cachedSelectHTML = html;
             return html;
         }
 
+        // Искры
+        function sparksAt(x, y, count = 10) {
+            for (let i = 0; i < count; i++) {
+                const s = document.createElement("div");
+                s.className = "spark";
+                const dx = Math.random() * 120 - 60 + "px";
+                const dy = Math.random() * 120 - 80 + "px";
+                s.style.left = x + "px";
+                s.style.top = y + "px";
+                s.style.setProperty("--dx", dx);
+                s.style.setProperty("--dy", dy);
+                document.body.appendChild(s);
+                setTimeout(() => s.remove(), 600);
+            }
+        }
+
+        // Итоги
+        function calcTotals() {
+            let total = 0;
+
+            document.querySelectorAll(".metal-weight").forEach((inp) => {
+                const v = parseFloat(inp.value);
+                if (!isNaN(v) && v > 0) total += v;
+            });
+
+            const trucks = total > 0 ? Math.ceil(total / 15.0) : 0;
+
+            document.getElementById("sum-weight").innerText = total.toFixed(3) + " ТОНН";
+            document.getElementById("sum-trucks").innerText = trucks + (trucks === 1 ? " РЕЙС" : " РЕЙСОВ");
+
+            updateMainButtonState();
+        }
+
+        // Счётчик позиций
+        function updateCount() {
+            const count = document.getElementsByClassName("item-card").length;
+            document.getElementById("count-badge").innerText = count + " ПОЗ.";
+            updateMainButtonState();
+        }
+
+        // Управление состоянием главной кнопки
+        function updateMainButtonState() {
+            const btn = document.getElementById("main-btn");
+            const objName = document.getElementById("objectName").value.trim();
+            const prodTime = parseInt(document.getElementById("production_time").value, 10);
+
+            // есть ли хоть одна валидная позиция
+            let hasValidItem = false;
+            document.querySelectorAll(".item-card").forEach((card) => {
+                const code = card.querySelector(".metal-type").value;
+                const weight = parseFloat(card.querySelector(".metal-weight").value);
+                if (code && !isNaN(weight) && weight > 0) hasValidItem = true;
+            });
+
+            const ok = objName.length > 0 && Number.isFinite(prodTime) && prodTime > 0 && hasValidItem;
+
+            btn.disabled = !ok;
+            btn.innerText = ok ? "СФОРМИРОВАТЬ КП" : (objName.length === 0 || !prodTime ? "ЗАПОЛНИТЕ ДАННЫЕ" : "ДОБАВЬТЕ МЕТАЛЛ");
+        }
+
+        // Добавить позицию
         function addItem() {
-            // Haptic feedback
-            if(tg.HapticFeedback) tg.HapticFeedback.impactOccurred('light');
+            if (tg.HapticFeedback) tg.HapticFeedback.impactOccurred("light");
 
-            const container = document.getElementById('items-container');
-            const div = document.createElement('div');
-            div.className = 'item-card';
-
+            const container = document.getElementById("items-container");
+            const div = document.createElement("div");
+            div.className = "item-card";
             div.innerHTML = `
                 ${buildSelectHTML()}
                 <div class="row-controls">
                     <div class="weight-input-group">
-                        <input type="number" class="metal-weight" placeholder="0.00" step="0.1" min="0">
+                        <input type="number" class="metal-weight" placeholder="Вес" step="0.1" min="0" inputmode="decimal">
                     </div>
-                    <div class="del-btn" onclick="removeItem(this)">
-                        <span>&times;</span>
-                    </div>
+                    <div class="del-btn" onclick="removeItem(this)"><span>&times;</span></div>
                 </div>
             `;
+
             container.appendChild(div);
             updateCount();
-            
-            // Плавный скролл к новому элементу
-            div.scrollIntoView({ behavior: 'smooth', block: 'center' });
+
+            // небольшой вау-момент: искры из центра кнопки добавления
+            const addBtn = document.getElementById("add-btn");
+            const r = addBtn.getBoundingClientRect();
+            sparksAt(r.left + r.width / 2, r.top + r.height / 2, 12);
+
+            // автофокус: сначала на select
+            const sel = div.querySelector(".metal-type");
+            sel.focus();
+
+            // когда выбрали профиль — прыгнуть на вес
+            sel.addEventListener("change", () => {
+                const w = div.querySelector(".metal-weight");
+                w.focus();
+            });
+
+            div.scrollIntoView({ behavior: "smooth", block: "center" });
         }
 
+        // Удалить позицию
         function removeItem(btn) {
-            if(tg.HapticFeedback) tg.HapticFeedback.impactOccurred('medium');
-            const card = btn.closest('.item-card');
-            card.classList.add('removing');
+            if (tg.HapticFeedback) tg.HapticFeedback.impactOccurred("medium");
+            const card = btn.closest(".item-card");
+            card.classList.add("removing");
             setTimeout(() => {
                 card.remove();
                 updateCount();
-            }, 300); // Ждем окончания анимации
+                calcTotals();
+            }, 300);
         }
 
-        function updateCount() {
-            const count = document.getElementsByClassName('item-card').length;
-            const btn = document.getElementById('main-btn');
-            const badge = document.getElementById('count-badge');
-            
-            btn.style.display = count > 0 ? 'block' : 'none';
-            badge.innerText = count + ' ' + declension(count, ['ПОЗИЦИЯ', 'ПОЗИЦИИ', 'ПОЗИЦИЙ']);
-        }
-        
-        // Склонение слов
-        function declension(number, titles) {
-            const cases = [2, 0, 1, 1, 1, 2];
-            return titles[(number % 100 > 4 && number % 100 < 20) ? 2 : cases[(number % 10 < 5) ? number % 10 : 5]];
-        }
-
+        // Отправка данных
         function sendData() {
-            const objName = document.getElementById('objectName').value;
-            const clientName = document.getElementById('clientName').value;
-            
-            if (!objName) {
-                if(tg.HapticFeedback) tg.HapticFeedback.notificationOccurred('error');
-                tg.showPopup({title: 'Внимание!', message: 'Укажите название объекта для заголовка КП.'});
-                document.getElementById('objectName').focus();
+            const objName = document.getElementById("objectName").value.trim();
+            const objAddr = document.getElementById("objectAddress").value.trim();
+            const prodTimeRaw = document.getElementById("production_time").value;
+            const prodTime = parseInt(prodTimeRaw, 10);
+
+            // Валидация объекта/срока
+            if (!objName || !Number.isFinite(prodTime) || prodTime <= 0) {
+                if (tg.HapticFeedback) tg.HapticFeedback.notificationOccurred("error");
+                tg.showPopup({ title: "Ошибка", message: 'Укажите "Название объекта" и корректный "Срок изготовления"!' });
                 return;
             }
 
             let items = [];
-            let isValid = true;
+            let isValidItems = true;
 
-            document.querySelectorAll('.item-card').forEach(card => {
-                const code = card.querySelector('.metal-type').value;
-                const weight = parseFloat(card.querySelector('.metal-weight').value);
-                const selectElem = card.querySelector('.metal-type');
-                const inputElem = card.querySelector('.metal-weight');
+            document.querySelectorAll(".item-card").forEach((card) => {
+                const sel = card.querySelector(".metal-type");
+                const code = sel.value;
+                const weightInput = card.querySelector(".metal-weight");
+                const weight = parseFloat(weightInput.value);
 
-                // Простая валидация
-                if (!code) {
-                    selectElem.style.borderColor = 'red';
-                    isValid = false;
+                const nameText = sel.selectedIndex > 0 ? sel.options[sel.selectedIndex].text : "";
+
+                if (!code || isNaN(weight) || weight <= 0) {
+                    card.style.borderLeftColor = "red";
+                    isValidItems = false;
                 } else {
-                    selectElem.style.borderColor = '#333';
-                }
-
-                if (!weight || weight <= 0) {
-                    inputElem.style.borderColor = 'red';
-                    isValid = false;
-                } else {
-                    inputElem.style.borderColor = '#333';
-                }
-
-                if (code && weight) {
-                    const found = metalCatalog.find(x => x.code === code);
-                    items.push({
-                        code: code,
-                        name: found ? found.label : code,
-                        weight: weight
-                    });
+                    card.style.borderLeftColor = "#FFD700";
+                    // фиксируем максимум 3 знака
+                    const fixedWeight = Math.round(weight * 1000) / 1000;
+                    items.push({ name: nameText, code: code, weight: fixedWeight });
                 }
             });
 
-            if (!isValid) {
-                 if(tg.HapticFeedback) tg.HapticFeedback.notificationOccurred('warning');
-                 tg.showPopup({title: 'Ошибка', message: 'Заполните все поля (выберите металл и укажите вес).'});
-                 return;
+            if (!isValidItems || items.length === 0) {
+                if (tg.HapticFeedback) tg.HapticFeedback.notificationOccurred("warning");
+                tg.showPopup({ title: "Внимание", message: "Добавьте хотя бы одну позицию металла с весом." });
+                return;
             }
 
             const data = {
                 object_name: objName,
-                client_name: clientName,
+                object_address: objAddr,
                 items: items,
-                options: {
-                    painting: document.getElementById('painting').checked,
-                    delivery: document.getElementById('delivery').checked,
-                    montage: document.getElementById('montage').checked
-                },
-                timestamp: new Date().toISOString()
+                production_time: String(prodTime),
+                delivery_price: document.getElementById("delivery_price").value || 40000,
+                painting_type: document.getElementById("painting_type").value,
+                include_kmd: document.getElementById("include_kmd").checked,
+                include_montage: document.getElementById("include_montage").checked
             };
 
-            if(tg.HapticFeedback) tg.HapticFeedback.notificationOccurred('success');
+            // вау: искры на кнопке
+            const mainBtn = document.getElementById("main-btn");
+            const r = mainBtn.getBoundingClientRect();
+            sparksAt(r.left + r.width / 2, r.top + 10, 16);
+
+            if (tg.HapticFeedback) tg.HapticFeedback.notificationOccurred("success");
             tg.sendData(JSON.stringify(data));
         }
 
-        // Добавляем первую строку при старте
-        // setTimeout(addItem, 300); 
+        // Слушатели: пересчёт итогов и состояния кнопки
+        document.addEventListener("input", (e) => {
+            if (e.target && e.target.classList && e.target.classList.contains("metal-weight")) {
+                calcTotals();
+            }
+            if (e.target && (e.target.id === "objectName" || e.target.id === "production_time")) {
+                updateMainButtonState();
+            }
+        });
+
+        // Кнопка "добавить"
+        document.getElementById("add-btn").addEventListener("click", addItem);
+
+        // Старт: сразу одна позиция (приятнее, чем пустота)
+        addItem();
+        calcTotals();
+        updateMainButtonState();
     </script>
 </body>
 </html>
