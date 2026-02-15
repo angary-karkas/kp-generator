@@ -237,6 +237,19 @@
 
         .hint { color: #666; font-size: 13px; margin-top: 10px; text-align: center; }
         .section-label { color: var(--primary-yellow); font-size: 14px; margin-bottom: 5px; display: block; font-weight: bold; }
+        
+        .price-input-row {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            margin-bottom: 15px;
+            background: #252525;
+            padding: 10px;
+            border-radius: 4px;
+            border-left: 2px solid #666;
+        }
+        .price-input-row input { margin-bottom: 0; }
+        .hidden { display: none; }
 
         /* Нижняя зона: итог + кнопка */
         #main-btn-container {
@@ -360,24 +373,42 @@
             <option value="pf115">Эмаль ПФ-115 (2 слоя)</option>
         </select>
 
+        <!-- КМД -->
         <div class="checkbox-wrapper">
             <span class="checkbox-label">Разработка чертежей КМД</span>
             <label class="switch">
-                <input type="checkbox" id="include_kmd" checked />
+                <input type="checkbox" id="include_kmd" checked onchange="toggleInput('kmd_price_container', this.checked)"/>
                 <span class="slider"></span>
             </label>
         </div>
+        <div id="kmd_price_container" class="price-input-row">
+            <span style="white-space: nowrap; font-size: 14px;">Цена (руб/тн):</span>
+            <input type="number" id="kmd_price" value="4500" />
+        </div>
 
+        <!-- Монтаж -->
         <div class="checkbox-wrapper">
             <span class="checkbox-label">Монтаж металлоконструкций</span>
             <label class="switch">
-                <input type="checkbox" id="include_montage" />
+                <input type="checkbox" id="include_montage" onchange="toggleInput('montage_price_container', this.checked)"/>
                 <span class="slider"></span>
             </label>
         </div>
+        <div id="montage_price_container" class="price-input-row hidden">
+            <span style="white-space: nowrap; font-size: 14px;">Цена (руб/тн):</span>
+            <input type="number" id="montage_price" value="47000" />
+        </div>
 
-        <div style="border-top:1px solid #333; padding-top:15px; margin-top:10px;">
-            <span class="section-label">ЛОГИСТИКА</span>
+        <!-- Логистика -->
+        <div class="checkbox-wrapper" style="border-top:1px solid #333; padding-top:15px; margin-top:10px;">
+            <span class="section-label" style="margin:0;">ЛОГИСТИКА (Включить)</span>
+            <label class="switch">
+                <input type="checkbox" id="include_delivery" onchange="toggleInput('delivery_container', this.checked)"/>
+                <span class="slider"></span>
+            </label>
+        </div>
+        
+        <div id="delivery_container" class="hidden">
             <div style="display:flex; gap:10px; align-items:center;">
                 <div style="flex-grow:1;">Стоимость рейса (руб):</div>
                 <input type="number" id="delivery_price" value="40000" style="width:120px; margin-bottom:0;" />
@@ -390,7 +421,7 @@
         <div id="live-summary">
             <div style="color:#B0B0B0; font-size:13px;">ИТОГ</div>
             <div style="text-align:right;">
-                <div id="sum-weight" style="color:#FFD700; font-weight:700; font-size:14px;">0.000 ТОНН</div>
+                <div id="sum-weight" style="color:#FFD700; font-weight:700; font-size:14px;">0 ТОНН</div>
                 <div id="sum-trucks" style="color:#B0B0B0; font-size:12px;">0 РЕЙСОВ</div>
             </div>
         </div>
@@ -455,6 +486,15 @@
             return html;
         }
 
+        function toggleInput(id, isChecked) {
+            const el = document.getElementById(id);
+            if(isChecked) {
+                el.classList.remove('hidden');
+            } else {
+                el.classList.add('hidden');
+            }
+        }
+
         // Искры
         function sparksAt(x, y, count = 10) {
             for (let i = 0; i < count; i++) {
@@ -482,7 +522,10 @@
 
             const trucks = total > 0 ? Math.ceil(total / 15.0) : 0;
 
-            document.getElementById("sum-weight").innerText = total.toFixed(3) + " ТОНН";
+            // Убираем нули: parseFloat(num.toFixed(3)) делает 5.000 -> 5
+            const prettyTotal = parseFloat(total.toFixed(3));
+            
+            document.getElementById("sum-weight").innerText = prettyTotal + " ТОНН";
             document.getElementById("sum-trucks").innerText = trucks + (trucks === 1 ? " РЕЙС" : " РЕЙСОВ");
 
             updateMainButtonState();
@@ -607,15 +650,22 @@
                 return;
             }
 
+            const isDelivery = document.getElementById("include_delivery").checked;
+            
             const data = {
                 object_name: objName,
                 object_address: objAddr,
                 items: items,
                 production_time: String(prodTime),
-                delivery_price: document.getElementById("delivery_price").value || 40000,
+                // Если доставка выключена, отправляем 0 или специальный флаг (но пока шлем цену)
+                delivery_price: isDelivery ? (document.getElementById("delivery_price").value || 40000) : 0,
                 painting_type: document.getElementById("painting_type").value,
+                
                 include_kmd: document.getElementById("include_kmd").checked,
-                include_montage: document.getElementById("include_montage").checked
+                kmd_price: document.getElementById("kmd_price").value || 4500,
+                
+                include_montage: document.getElementById("include_montage").checked,
+                montage_price: document.getElementById("montage_price").value || 47000
             };
 
             // вау: искры на кнопке
