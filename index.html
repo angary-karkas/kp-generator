@@ -26,7 +26,7 @@
             color: var(--text-main);
             margin: 0;
             padding: 20px;
-            padding-bottom: 170px; /* место под итог + кнопку */
+            padding-bottom: 170px;
         }
 
         .caution-tape {
@@ -102,7 +102,6 @@
             overflow: hidden;
         }
 
-        /* Скан-линия для техно-эффекта */
         .item-card::after {
             content: "";
             position: absolute;
@@ -251,7 +250,6 @@
         .price-input-row input { margin-bottom: 0; }
         .hidden { display: none; }
 
-        /* Нижняя зона: итог + кнопка */
         #main-btn-container {
             position: fixed;
             bottom: 20px;
@@ -295,12 +293,11 @@
         #main-btn[disabled] {
             opacity: 0.55;
             cursor: not-allowed;
-            background: #555; /* Визуально делаем серым когда выключено */
+            background: #555;
             color: #888;
             box-shadow: none;
         }
 
-        /* Блик по кнопке */
         #main-btn:not([disabled])::after {
             content: "";
             position: absolute;
@@ -318,7 +315,6 @@
 
         #main-btn:active { transform: scale(0.96); }
 
-        /* Искры */
         .spark {
             position: fixed;
             width: 6px;
@@ -335,20 +331,14 @@
             0% { transform: translate(0,0) rotate(0deg) scale(1); opacity: 1; }
             100% { transform: translate(var(--dx), var(--dy)) rotate(160deg) scale(0.4); opacity: 0; }
         }
-
-        /* Респект людям, которым тяжело от анимаций */
-        @media (prefers-reduced-motion: reduce) {
-            .item-card::after { animation: none; }
-            #main-btn::after { animation: none; }
-            .spark { display: none; }
-        }
     </style>
 </head>
 
 <body>
     <div class="caution-tape"></div>
 
-    <h3>ДАННЫЕ ОБЪЕКТА</h3>
+    <h3>ДАННЫЕ ОБЪЕКТА И КЛИЕНТА</h3>
+    <input type="text" id="clientName" placeholder="Имя клиента / Компания (для водяного знака)" />
     <input type="text" id="objectName" placeholder="Название объекта (напр. Цех в Балашихе)" />
     <input type="text" id="objectAddress" placeholder="Адрес объекта (для шапки КП)" />
 
@@ -376,7 +366,6 @@
             <option value="pf115">Эмаль ПФ-115 (2 слоя)</option>
         </select>
 
-        <!-- КМД -->
         <div class="checkbox-wrapper">
             <span class="checkbox-label">Разработка чертежей КМД</span>
             <label class="switch">
@@ -389,7 +378,6 @@
             <input type="number" id="kmd_price" value="4500" />
         </div>
 
-        <!-- Монтаж -->
         <div class="checkbox-wrapper">
             <span class="checkbox-label">Монтаж металлоконструкций</span>
             <label class="switch">
@@ -402,7 +390,6 @@
             <input type="number" id="montage_price" value="47000" />
         </div>
 
-        <!-- Логистика -->
         <div class="checkbox-wrapper" style="border-top:1px solid #333; padding-top:15px; margin-top:10px;">
             <span class="section-label" style="margin:0;">ЛОГИСТИКА (Включить)</span>
             <label class="switch">
@@ -433,22 +420,16 @@
     </div>
 
     <script>
-        // Telegram WebApp
         const tg = window.Telegram.WebApp;
         tg.expand();
         tg.setHeaderColor("#121212");
         tg.setBackgroundColor("#121212");
-
-        // =========================================================
-        // ПОЛНЫЙ КАТАЛОГ МЕТАЛЛА (единый)
-        // =========================================================
 
         const metalCatalog = (() => {
             const items = [];
             const add = (code, group, label) => items.push({ code, group, label });
             const addMany = (group, rows) => rows.forEach(r => add(r.code, group, r.label));
             
-            /* 1) БАЛКИ (ДВУТАВРЫ) */
             addMany("Балки", [
             { code: "B-10B1",  label: "Балка (двутавр) стальная г/к 10Б1 ГОСТ Р 57837-2017 С255" },
             { code: "B-12B1",  label: "Балка (двутавр) стальная г/к 12Б1 ГОСТ Р 57837-2017 С255" },
@@ -497,7 +478,6 @@
             { code: "B-40K1",  label: "Балка (двутавр) стальная г/к 40К1 ГОСТ Р 57837-2017 С255" },
             ]);
 
-            /* 2) ЛИСТЫ */
             addMany("Листы", [
             { code: "S-2",  label: "Прокат листовой г/к 2 мм ГОСТ 19903-2015 С255" },
             { code: "S-3",  label: "Прокат листовой г/к 3 мм ГОСТ 19903-2015 С255" },
@@ -516,17 +496,14 @@
             { code: "S-40", label: "Прокат листовой г/к 40 мм ГОСТ 19903-2015 С355" },
             ]);
 
-            /* 3) ТРУБЫ */
             const pipeWall = [1.0, 1.2, 1.5, 2, 2.5, 3, 3.5, 4, 5, 6, 7, 8, 9, 10, 12];
             const profileWall = [1.5,2,2.5,3,4,5,6,8,10];
 
-            // 1. Профильные квадратные ГОСТ 8639-82 (сначала)
             const squareSides = [15,20,25,30,40,50,60,80,100,120,140,160,180,200];
             squareSides.forEach(a => profileWall.forEach(t => {
                 add(`T-ПК-${a}x${a}x${t}`, "Трубы", `Труба профильная ${a}x${a}x${t} ГОСТ 8639-82`);
             }));
 
-            // 2. Профильные прямоугольные ГОСТ 8645-68 (затем)
             const rectSides = [
             [40,20],[50,25],[60,30],[80,40],[100,50],
             [120,60],[140,60],[150,100],[160,80],[180,100],
@@ -536,27 +513,23 @@
                 add(`T-ПР-${a}x${b}x${t}`, "Трубы", `Труба профильная ${a}x${b}x${t} ГОСТ 8645-68`);
             }));
 
-            // 3. Электросварные круглые ГОСТ 10704-91 (в конце)
             const erwDiameters = [10,12,14,16,18,20,25,32,38,45,57,76,89,108,114,133,159,168,219,273,325,377,426,530,630,720,820,920,1020,1220,1420];
             erwDiameters.forEach(d => pipeWall.forEach(t => {
                 add(`T-ЭС-${d}x${t}`, "Трубы", `Труба электросварная Ø${d}x${t} ГОСТ 10704-91`);
             }));
             
-            // 4. Бесшовные горячедеформированные ГОСТ 8732-78
             const hotSeamlessDiam = [20,25,32,38,45,57,76,89,108,114,133,159,168,219,273,325,377,426,530];
             const hotSeamlessWall = [2.5,3,3.5,4,5,6,7,8,9,10,12,14,16,18,20,22,25,28,30];
             hotSeamlessDiam.forEach(d => hotSeamlessWall.forEach(t => {
                 add(`T-БШГД-${d}x${t}`, "Трубы", `Труба бесшовная г/д Ø${d}x${t} ГОСТ 8732-78`);
             }));
             
-            // 5. Бесшовные холоднодеформированные ГОСТ 8734-75
             const coldSeamlessDiam = [5,6,8,10,12,14,16,18,20,25,30,32,38,45,50,57,60,63,70,76,83,89];
             const coldSeamlessWall = [0.5,0.8,1,1.2,1.5,2,2.5,3,3.5,4,5,6];
             coldSeamlessDiam.forEach(d => coldSeamlessWall.forEach(t => {
                 add(`T-БШХД-${d}x${t}`, "Трубы", `Труба бесшовная х/д Ø${d}x${t} ГОСТ 8734-75`);
             }));
 
-            /* 4) ШВЕЛЛЕР */
             addMany("Швеллер", [
             { code: "C-5P",   label: "Швеллер г/к 5П ГОСТ 8240-97 С255" },
             { code: "C-6.5P", label: "Швеллер г/к 6,5П ГОСТ 8240-97 С255" },
@@ -576,7 +549,6 @@
             { code: "C-40P",  label: "Швеллер г/к 40П ГОСТ 8240-97 С255" },
             ]);
 
-            /* 5) УГОЛКИ */
             addMany("Уголки", [
             { code: "A-25x4",   label: "Уголок равнополочный 25x4 ГОСТ 8509-93 С255" },
             { code: "A-32x4",   label: "Уголок равнополочный 32x4 ГОСТ 8509-93 С255" },
@@ -597,8 +569,6 @@
             { code: "A-160x10", label: "Уголок равнополочный 160x10 ГОСТ 8509-93 С255" },
             ]);
 
-            /* 6) ПРОЧЕЕ */
-            // Арматура
             const rebarA500 = [5.5,6,7,8,9,10,11,12,14,16,18,20,22,25,28,32,36,40];
             rebarA500.forEach(d => add(
                 `R-A500-${String(d).replace(".", "_")}`,
@@ -611,28 +581,24 @@
                 "Прочее",
                 `Арматура гладкая А240 (А1) Ø${d} ГОСТ 5781-82`
             ));
-            // Круг
             const krugSizes = [5,5.5,6,6.5,7,7.5,8,8.5,9,9.5,10,11,12,13,14,15,16,17,18,19,20,22,24,25,26,28,30,32,34,36,38,40,42,45,48,50,52,55,58,60,63,65,70,75,80,85,90,95,100,105,110,120,130,140,150,160,170,180,190,200,210,220,230,240,250,260,270];
             krugSizes.forEach(d => add(
                 `KR-${String(d).replace(".", "_")}`,
                 "Прочее",
                 `Круг стальной г/к Ø${String(d).replace(".", ",")} ГОСТ 2590-2006 С255`
             ));
-            // Квадрат
             const kvadratSizes = [6,7,8,9,10,11,12,13,14,15,16,17,18,19,20,22,24,25,26,28,30,32,34,36,38,40,42,45,48,50,55,60,63,65,70,75,80,85,90,95,100,110,120,130,140,150,160,170,180,190,200];
             kvadratSizes.forEach(s => add(
                 `KV-${s}`,
                 "Прочее",
                 `Квадрат стальной г/к ${s}x${s} ГОСТ 2591-2006 С255`
             ));
-            // Шестигранник
             const hexSizes = [8,10,12,14,17,19,22,24,27,30,32,36,41,46,50,55,60,65,70,75,80,90,100];
             hexSizes.forEach(s => add(
                 `HEX-${s}`,
                 "Прочее",
                 `Шестигранник стальной г/к ${s} ГОСТ 2879-2006 С255`
             ));
-            // Полоса
             const thickness = [4,5,6,8,10,12,14,16,18,20,22,25,28,30,32,36,40,45,50,60,70,80];
             const width = [10,12,14,16,18,20,22,25,28,30,32,36,40,45,50,60,70,80,90,100,120,140,160,180,200];
             thickness.forEach(t => width.forEach(w => add(
@@ -653,7 +619,6 @@
             }
         }
 
-        // Искры
         function sparksAt(x, y, count = 10) {
             for (let i = 0; i < count; i++) {
                 const s = document.createElement("div");
@@ -669,18 +634,14 @@
             }
         }
 
-        // Итоги
         function calcTotals() {
             let total = 0;
-
             document.querySelectorAll(".metal-weight").forEach((inp) => {
                 const v = parseFloat(inp.value);
                 if (!isNaN(v) && v > 0) total += v;
             });
 
             const trucks = total > 0 ? Math.ceil(total / 15.0) : 0;
-
-            // Убираем нули: parseFloat(num.toFixed(3)) делает 5.000 -> 5
             const prettyTotal = parseFloat(total.toFixed(3));
             
             document.getElementById("sum-weight").innerText = prettyTotal + " ТОНН";
@@ -689,20 +650,17 @@
             updateMainButtonState();
         }
 
-        // Счётчик позиций
         function updateCount() {
             const count = document.getElementsByClassName("item-card").length;
             document.getElementById("count-badge").innerText = count + " ПОЗ.";
             updateMainButtonState();
         }
 
-        // Управление состоянием главной кнопки
         function updateMainButtonState() {
             const btn = document.getElementById("main-btn");
             const objName = document.getElementById("objectName").value.trim();
             const prodTime = parseInt(document.getElementById("production_time").value, 10);
 
-            // есть ли хоть одна валидная позиция
             let hasValidItem = false;
             document.querySelectorAll(".item-card").forEach((card) => {
                 const code = card.querySelector(".metal-type").value;
@@ -716,7 +674,6 @@
             btn.innerText = ok ? "СФОРМИРОВАТЬ КП" : (objName.length === 0 || !prodTime ? "ЗАПОЛНИТЕ ДАННЫЕ" : "ДОБАВЬТЕ МЕТАЛЛ");
         }
 
-        // Добавить позицию
         function addItem() {
             if (tg.HapticFeedback) tg.HapticFeedback.impactOccurred("light");
 
@@ -724,7 +681,6 @@
             const div = document.createElement("div");
             div.className = "item-card";
             
-            // Получаем список групп (категорий) из каталога
             const groups = [];
             const seen = new Set();
             metalCatalog.forEach(i => {
@@ -758,24 +714,18 @@
             container.appendChild(div);
             updateCount();
 
-            // Искры
             const addBtn = document.getElementById("add-btn");
             const r = addBtn.getBoundingClientRect();
             sparksAt(r.left + r.width / 2, r.top + r.height / 2, 12);
 
-            // Логика зависимых списков
             const groupSelect = div.querySelector(".metal-group");
             const typeSelect = div.querySelector(".metal-type");
             const weightInput = div.querySelector(".metal-weight");
 
-            // При выборе категории
             groupSelect.addEventListener("change", () => {
                 const selectedGroup = groupSelect.value;
-                
-                // Фильтруем каталог
                 const items = metalCatalog.filter(i => i.group === selectedGroup);
                 
-                // Строим список типов
                 let typeOptions = '<option value="" disabled selected>Выберите профиль...</option>';
                 items.forEach(it => {
                     typeOptions += `<option value="${it.code}">${it.label}</option>`;
@@ -784,12 +734,9 @@
                 typeSelect.innerHTML = typeOptions;
                 typeSelect.disabled = false;
                 typeSelect.style.opacity = "1";
-                
-                // Сброс значения при смене группы
                 typeSelect.value = ""; 
             });
 
-            // При выборе типа
             typeSelect.addEventListener("change", () => {
                 weightInput.focus();
                 updateMainButtonState();
@@ -798,7 +745,6 @@
             div.scrollIntoView({ behavior: "smooth", block: "center" });
         }
 
-        // Удалить позицию
         function removeItem(btn) {
             if (tg.HapticFeedback) tg.HapticFeedback.impactOccurred("medium");
             const card = btn.closest(".item-card");
@@ -810,14 +756,14 @@
             }, 300);
         }
 
-        // Отправка данных
         function sendData() {
+            // Забираем данные из всех полей, включая новое поле "Имя клиента"
+            const clientName = document.getElementById("clientName").value.trim();
             const objName = document.getElementById("objectName").value.trim();
             const objAddr = document.getElementById("objectAddress").value.trim();
             const prodTimeRaw = document.getElementById("production_time").value;
             const prodTime = parseInt(prodTimeRaw, 10);
 
-            // Валидация объекта/срока
             if (!objName || !Number.isFinite(prodTime) || prodTime <= 0) {
                 if (tg.HapticFeedback) tg.HapticFeedback.notificationOccurred("error");
                 tg.showPopup({ title: "Ошибка", message: 'Укажите "Название объекта" и корректный "Срок изготовления"!' });
@@ -840,7 +786,6 @@
                     isValidItems = false;
                 } else {
                     card.style.borderLeftColor = "#FFD700";
-                    // фиксируем максимум 3 знака
                     const fixedWeight = Math.round(weight * 1000) / 1000;
                     items.push({ name: nameText, code: code, weight: fixedWeight });
                 }
@@ -855,31 +800,29 @@
             const isDelivery = document.getElementById("include_delivery").checked;
             
             const data = {
+                client_name: clientName, // ПЕРЕДАЕМ ИМЯ КЛИЕНТА В БОТ!
                 object_name: objName,
                 object_address: objAddr,
                 items: items,
                 production_time: String(prodTime),
-                // Если доставка выключена, отправляем 0 или специальный флаг (но пока шлем цену)
                 delivery_price: isDelivery ? (document.getElementById("delivery_price").value || 40000) : 0,
                 painting_type: document.getElementById("painting_type").value,
-                
                 include_kmd: document.getElementById("include_kmd").checked,
                 kmd_price: document.getElementById("kmd_price").value || 4500,
-                
                 include_montage: document.getElementById("include_montage").checked,
                 montage_price: document.getElementById("montage_price").value || 47000
             };
 
-            // вау: искры на кнопке
             const mainBtn = document.getElementById("main-btn");
             const r = mainBtn.getBoundingClientRect();
             sparksAt(r.left + r.width / 2, r.top + 10, 16);
 
             if (tg.HapticFeedback) tg.HapticFeedback.notificationOccurred("success");
+            
+            // Отправляем данные и приложение закроется само
             tg.sendData(JSON.stringify(data));
         }
 
-        // Слушатели: пересчёт итогов и состояния кнопки
         document.addEventListener("input", (e) => {
             if (e.target && e.target.classList && e.target.classList.contains("metal-weight")) {
                 calcTotals();
@@ -889,11 +832,8 @@
             }
         });
 
-        // Кнопка "добавить"
         document.getElementById("add-btn").addEventListener("click", addItem);
 
-        // Старт: сразу одна позиция (приятнее, чем пустота)
-        // Дожидаемся построения DOM
         window.addEventListener('load', () => {
            addItem();
            calcTotals();
