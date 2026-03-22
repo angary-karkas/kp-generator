@@ -169,6 +169,36 @@
         .grade-input-group { flex-grow: 1; min-width: 110px; }
         .grade-input-group select { margin: 0; padding: 14px 8px; font-size: 14px; background-color: #2a2a2a; border-color: #444; }
 
+        /* Кнопка ручной цены */
+        .price-override-btn {
+            background: #2a2a2a;
+            color: var(--text-main);
+            border: 1px solid #444;
+            height: 46px;
+            padding: 0 10px;
+            border-radius: 4px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+            transition: all 0.2s;
+            font-size: 14px;
+            white-space: nowrap;
+        }
+        .price-override-btn:active { background: #444; transform: scale(0.98); }
+        .price-override-btn.active { border-color: var(--primary-yellow); color: var(--primary-yellow); background: rgba(255,215,0,0.1); }
+
+        .price-override-container {
+            display: none;
+            background: #1a1a1a;
+            padding: 10px;
+            border-radius: 6px;
+            margin-top: 10px;
+            border: 1px dashed #444;
+        }
+        .price-override-container.show { display: flex; gap: 10px; }
+        .price-override-container input { margin-bottom: 0; padding: 10px; font-size: 14px; }
+
         .del-btn {
             background: #2a2a2a;
             color: var(--danger);
@@ -445,7 +475,6 @@
             const add = (code, group, label) => items.push({ code, group, label });
             const addMany = (group, rows) => rows.forEach(r => add(r.code, group, r.label));
             
-            // НОВАЯ КАТЕГОРИЯ ОБЩИХ КОНСТРУКЦИЙ
             addMany("Конструкции и изделия", [
                 { code: "K-MK", label: "Металлические конструкции" },
                 { code: "K-MI", label: "Металлические изделия" },
@@ -742,7 +771,13 @@
                             <option value="C355">С355 (+5%)</option>
                         </select>
                     </div>
+                    <div class="price-override-btn" title="Своя цена" onclick="toggleCustomPrice(this)">✏️ Цена</div>
                     <div class="del-btn" onclick="removeItem(this)"><span>&times;</span></div>
+                </div>
+
+                <div class="price-override-container">
+                    <input type="number" class="custom-mat-price" placeholder="Мат-л (руб/тн)" />
+                    <input type="number" class="custom-work-price" placeholder="Работа (руб/тн)" />
                 </div>
             `;
 
@@ -779,7 +814,6 @@
             typeSelect.addEventListener("change", () => {
                 let selectedText = typeSelect.options[typeSelect.selectedIndex].text;
                 
-                // Автоподстановка марки при выборе
                 if (gradeSelect.value === "C345") {
                     selectedText = selectedText.replace(/С255|C255|С355|C355/g, "С345");
                     if (!selectedText.includes("С345")) selectedText += " (С345)";
@@ -795,7 +829,6 @@
                 updateMainButtonState();
             });
 
-            // Авто-замена марки стали в названии при переключении дропдауна
             gradeSelect.addEventListener("change", () => {
                 let val = nameInput.value;
                 if (gradeSelect.value === "C345") {
@@ -813,6 +846,13 @@
             nameInput.addEventListener("input", updateMainButtonState);
             
             div.scrollIntoView({ behavior: "smooth", block: "center" });
+        }
+
+        // Функция открытия/закрытия полей для ручной цены
+        function toggleCustomPrice(btn) {
+            btn.classList.toggle('active');
+            const container = btn.closest('.item-card').querySelector('.price-override-container');
+            container.classList.toggle('show');
         }
 
         function removeItem(btn) {
@@ -847,6 +887,12 @@
                 const weight = parseFloat(card.querySelector(".metal-weight").value);
                 const customName = card.querySelector(".metal-name-input").value.trim();
                 const grade = card.querySelector(".metal-grade").value;
+                
+                // Считываем ручные цены (если они есть)
+                const cMatStr = card.querySelector(".custom-mat-price").value;
+                const cWorkStr = card.querySelector(".custom-work-price").value;
+                const customMat = cMatStr ? parseFloat(cMatStr) : null;
+                const customWork = cWorkStr ? parseFloat(cWorkStr) : null;
 
                 if (!code || isNaN(weight) || weight <= 0 || !customName) {
                     card.style.borderLeftColor = "red";
@@ -854,7 +900,14 @@
                 } else {
                     card.style.borderLeftColor = "#FFD700";
                     const fixedWeight = Math.round(weight * 1000) / 1000;
-                    items.push({ name: customName, code: code, weight: fixedWeight, grade: grade });
+                    items.push({ 
+                        name: customName, 
+                        code: code, 
+                        weight: fixedWeight, 
+                        grade: grade,
+                        custom_mat: customMat,
+                        custom_work: customWork
+                    });
                 }
             });
 
