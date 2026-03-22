@@ -133,14 +133,25 @@
 
         .item-card.removing { animation: slideOut 0.3s forwards; }
 
+        .metal-name-input {
+            background: rgba(255, 215, 0, 0.05);
+            border: 1px dashed var(--primary-yellow);
+            color: #fff;
+            margin-bottom: 5px;
+        }
+        .metal-name-input:focus {
+            background: rgba(255, 215, 0, 0.1);
+            border-style: solid;
+        }
+
         .row-controls {
             display: flex;
             gap: 10px;
             align-items: center;
-            margin-top: 5px;
+            margin-top: 10px;
         }
 
-        .weight-input-group { flex-grow: 1; position: relative; }
+        .weight-input-group { flex-grow: 1.5; position: relative; }
         .weight-input-group input { margin: 0; }
 
         .weight-input-group::after {
@@ -154,6 +165,9 @@
             font-weight: bold;
             pointer-events: none;
         }
+
+        .grade-input-group { flex-grow: 1; min-width: 100px; }
+        .grade-input-group select { margin: 0; padding: 14px 10px; font-size: 14px; background-color: #2a2a2a; border-color: #444; }
 
         .del-btn {
             background: #2a2a2a;
@@ -169,6 +183,7 @@
             transition: all 0.2s;
             font-size: 20px;
             user-select: none;
+            flex-shrink: 0;
         }
         .del-btn:active { background: var(--danger); color: #fff; transform: scale(0.98); }
 
@@ -350,9 +365,9 @@
     <div id="items-container"></div>
 
     <button class="add-btn" id="add-btn" type="button">
-        <span style="font-size:24px;">+</span> ДОБАВИТЬ МЕТАЛЛ
+        <span style="font-size:24px;">+</span> ДОБАВИТЬ ПОЗИЦИЮ
     </button>
-    <div class="hint">Выберите профиль и укажите вес в тоннах</div>
+    <div class="hint">Выберите профиль, укажите марку стали и вес</div>
 
     <h3>УСЛОВИЯ И УСЛУГИ</h3>
     <div class="options-container">
@@ -430,6 +445,13 @@
             const add = (code, group, label) => items.push({ code, group, label });
             const addMany = (group, rows) => rows.forEach(r => add(r.code, group, r.label));
             
+            // НОВАЯ КАТЕГОРИЯ ОБЩИХ КОНСТРУКЦИЙ
+            addMany("Конструкции и изделия", [
+                { code: "K-MK", label: "Металлические конструкции" },
+                { code: "K-MI", label: "Металлические изделия" },
+                { code: "K-SB", label: "Балка сварная (индивидуальная)" }
+            ]);
+
             addMany("Балки", [
             { code: "B-10B1",  label: "Балка (двутавр) стальная г/к 10Б1 ГОСТ Р 57837-2017 С255" },
             { code: "B-12B1",  label: "Балка (двутавр) стальная г/к 12Б1 ГОСТ Р 57837-2017 С255" },
@@ -665,13 +687,14 @@
             document.querySelectorAll(".item-card").forEach((card) => {
                 const code = card.querySelector(".metal-type").value;
                 const weight = parseFloat(card.querySelector(".metal-weight").value);
-                if (code && !isNaN(weight) && weight > 0) hasValidItem = true;
+                const customName = card.querySelector(".metal-name-input").value.trim();
+                if (code && !isNaN(weight) && weight > 0 && customName) hasValidItem = true;
             });
 
             const ok = objName.length > 0 && Number.isFinite(prodTime) && prodTime > 0 && hasValidItem;
 
             btn.disabled = !ok;
-            btn.innerText = ok ? "СФОРМИРОВАТЬ КП" : (objName.length === 0 || !prodTime ? "ЗАПОЛНИТЕ ДАННЫЕ" : "ДОБАВЬТЕ МЕТАЛЛ");
+            btn.innerText = ok ? "СФОРМИРОВАТЬ КП" : (objName.length === 0 || !prodTime ? "ЗАПОЛНИТЕ ДАННЫЕ" : "ДОБАВЬТЕ ПОЗИЦИЮ");
         }
 
         function addItem() {
@@ -690,7 +713,7 @@
                 }
             });
 
-            let groupOptions = '<option value="" disabled selected>📂 Категория металла...</option>';
+            let groupOptions = '<option value="" disabled selected>📂 Категория профиля...</option>';
             groups.forEach(g => {
                 groupOptions += `<option value="${g}">${g}</option>`;
             });
@@ -699,13 +722,24 @@
                 <select class="metal-group" style="margin-bottom: 8px; font-weight: 500; color: var(--primary-yellow);">
                     ${groupOptions}
                 </select>
-                <select class="metal-type" disabled style="opacity: 0.6;">
+                <select class="metal-type" disabled style="opacity: 0.6; margin-bottom: 8px;">
                     <option value="" disabled selected>Сначала выберите категорию ☝️</option>
                 </select>
+                
+                <div class="name-edit-group hidden">
+                    <input type="text" class="metal-name-input" placeholder="Название (можно редактировать)" />
+                    <div class="hint" style="text-align:left; margin-top:2px; margin-bottom:10px;">Название для таблицы КП (можно редактировать)</div>
+                </div>
 
                 <div class="row-controls">
                     <div class="weight-input-group">
                         <input type="number" class="metal-weight" placeholder="Вес" step="0.1" min="0" inputmode="decimal">
+                    </div>
+                    <div class="grade-input-group">
+                        <select class="metal-grade">
+                            <option value="C255">С255</option>
+                            <option value="C345">09Г2С (+5%)</option>
+                        </select>
                     </div>
                     <div class="del-btn" onclick="removeItem(this)"><span>&times;</span></div>
                 </div>
@@ -720,7 +754,10 @@
 
             const groupSelect = div.querySelector(".metal-group");
             const typeSelect = div.querySelector(".metal-type");
+            const nameInputContainer = div.querySelector(".name-edit-group");
+            const nameInput = div.querySelector(".metal-name-input");
             const weightInput = div.querySelector(".metal-weight");
+            const gradeSelect = div.querySelector(".metal-grade");
 
             groupSelect.addEventListener("change", () => {
                 const selectedGroup = groupSelect.value;
@@ -735,12 +772,38 @@
                 typeSelect.disabled = false;
                 typeSelect.style.opacity = "1";
                 typeSelect.value = ""; 
+                nameInputContainer.classList.add("hidden");
             });
 
             typeSelect.addEventListener("change", () => {
+                let selectedText = typeSelect.options[typeSelect.selectedIndex].text;
+                
+                // Если выбрана марка 09Г2С, сразу подставляем её в текст
+                if (gradeSelect.value === "C345") {
+                    selectedText = selectedText.replace("С255", "09Г2С").replace("C255", "09Г2С");
+                    if (!selectedText.includes("09Г2С")) selectedText += " (09Г2С)";
+                }
+                
+                nameInput.value = selectedText;
+                nameInputContainer.classList.remove("hidden");
+                
                 weightInput.focus();
                 updateMainButtonState();
             });
+
+            // Авто-замена марки стали в названии при переключении дропдауна
+            gradeSelect.addEventListener("change", () => {
+                if (gradeSelect.value === "C345") {
+                    nameInput.value = nameInput.value.replace("С255", "09Г2С").replace("C255", "09Г2С");
+                    if (!nameInput.value.includes("09Г2С")) {
+                        nameInput.value += " (09Г2С)";
+                    }
+                } else {
+                    nameInput.value = nameInput.value.replace("09Г2С", "С255").replace(" (09Г2С)", "");
+                }
+            });
+
+            nameInput.addEventListener("input", updateMainButtonState);
             
             div.scrollIntoView({ behavior: "smooth", block: "center" });
         }
@@ -757,7 +820,6 @@
         }
 
         function sendData() {
-            // Забираем данные из всех полей, включая новое поле "Имя клиента"
             const clientName = document.getElementById("clientName").value.trim();
             const objName = document.getElementById("objectName").value.trim();
             const objAddr = document.getElementById("objectAddress").value.trim();
@@ -774,33 +836,31 @@
             let isValidItems = true;
 
             document.querySelectorAll(".item-card").forEach((card) => {
-                const sel = card.querySelector(".metal-type");
-                const code = sel.value;
-                const weightInput = card.querySelector(".metal-weight");
-                const weight = parseFloat(weightInput.value);
+                const code = card.querySelector(".metal-type").value;
+                const weight = parseFloat(card.querySelector(".metal-weight").value);
+                const customName = card.querySelector(".metal-name-input").value.trim();
+                const grade = card.querySelector(".metal-grade").value;
 
-                const nameText = sel.selectedIndex > 0 ? sel.options[sel.selectedIndex].text : "";
-
-                if (!code || isNaN(weight) || weight <= 0) {
+                if (!code || isNaN(weight) || weight <= 0 || !customName) {
                     card.style.borderLeftColor = "red";
                     isValidItems = false;
                 } else {
                     card.style.borderLeftColor = "#FFD700";
                     const fixedWeight = Math.round(weight * 1000) / 1000;
-                    items.push({ name: nameText, code: code, weight: fixedWeight });
+                    items.push({ name: customName, code: code, weight: fixedWeight, grade: grade });
                 }
             });
 
             if (!isValidItems || items.length === 0) {
                 if (tg.HapticFeedback) tg.HapticFeedback.notificationOccurred("warning");
-                tg.showPopup({ title: "Внимание", message: "Добавьте хотя бы одну позицию металла с весом." });
+                tg.showPopup({ title: "Внимание", message: "Убедитесь, что для каждой позиции указан вес и название." });
                 return;
             }
 
             const isDelivery = document.getElementById("include_delivery").checked;
             
             const data = {
-                client_name: clientName, // ПЕРЕДАЕМ ИМЯ КЛИЕНТА В БОТ!
+                client_name: clientName,
                 object_name: objName,
                 object_address: objAddr,
                 items: items,
@@ -819,7 +879,6 @@
 
             if (tg.HapticFeedback) tg.HapticFeedback.notificationOccurred("success");
             
-            // Отправляем данные и приложение закроется само
             tg.sendData(JSON.stringify(data));
         }
 
