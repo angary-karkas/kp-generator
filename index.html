@@ -169,7 +169,6 @@
         .grade-input-group { flex-grow: 1; min-width: 110px; }
         .grade-input-group select { margin: 0; padding: 14px 8px; font-size: 14px; background-color: #2a2a2a; border-color: #444; }
 
-        /* Кнопка ручной цены */
         .price-override-btn {
             background: #2a2a2a;
             color: var(--text-main);
@@ -196,7 +195,13 @@
             margin-top: 10px;
             border: 1px dashed #444;
         }
-        .price-override-container.show { display: flex; gap: 10px; }
+        .price-override-container.show { display: flex; flex-direction: column; gap: 10px; }
+        
+        .price-override-container.show.highlight {
+            border-color: var(--primary-yellow);
+            box-shadow: 0 0 10px rgba(255,215,0,0.1);
+        }
+
         .price-override-container input { margin-bottom: 0; padding: 10px; font-size: 14px; }
 
         .del-btn {
@@ -776,6 +781,7 @@
                 </div>
 
                 <div class="price-override-container">
+                    <div class="hint" style="text-align:left; color:#FFD700; margin-top:0;">Своя цена (если пусто — расчет по умолчанию)</div>
                     <input type="number" class="custom-mat-price" placeholder="Мат-л (руб/тн)" />
                     <input type="number" class="custom-work-price" placeholder="Работа (руб/тн)" />
                 </div>
@@ -794,6 +800,8 @@
             const nameInput = div.querySelector(".metal-name-input");
             const weightInput = div.querySelector(".metal-weight");
             const gradeSelect = div.querySelector(".metal-grade");
+            const priceBtn = div.querySelector(".price-override-btn");
+            const priceContainer = div.querySelector(".price-override-container");
 
             groupSelect.addEventListener("change", () => {
                 const selectedGroup = groupSelect.value;
@@ -824,6 +832,15 @@
                 
                 nameInput.value = selectedText;
                 nameInputContainer.classList.remove("hidden");
+
+                // Если выбрали Металлоизделия или Металлоконструкции, автоматом открываем цены!
+                if (typeSelect.value.startsWith("K-")) {
+                    priceBtn.classList.add('active');
+                    priceContainer.classList.add('show', 'highlight');
+                } else {
+                    priceBtn.classList.remove('active');
+                    priceContainer.classList.remove('show', 'highlight');
+                }
                 
                 weightInput.focus();
                 updateMainButtonState();
@@ -853,6 +870,7 @@
             btn.classList.toggle('active');
             const container = btn.closest('.item-card').querySelector('.price-override-container');
             container.classList.toggle('show');
+            container.classList.remove('highlight');
         }
 
         function removeItem(btn) {
@@ -888,7 +906,6 @@
                 const customName = card.querySelector(".metal-name-input").value.trim();
                 const grade = card.querySelector(".metal-grade").value;
                 
-                // Считываем ручные цены (если они есть)
                 const cMatStr = card.querySelector(".custom-mat-price").value;
                 const cWorkStr = card.querySelector(".custom-work-price").value;
                 const customMat = cMatStr ? parseFloat(cMatStr) : null;
