@@ -166,8 +166,8 @@
             pointer-events: none;
         }
 
-        .grade-input-group { flex-grow: 1; min-width: 100px; }
-        .grade-input-group select { margin: 0; padding: 14px 10px; font-size: 14px; background-color: #2a2a2a; border-color: #444; }
+        .grade-input-group { flex-grow: 1; min-width: 110px; }
+        .grade-input-group select { margin: 0; padding: 14px 8px; font-size: 14px; background-color: #2a2a2a; border-color: #444; }
 
         .del-btn {
             background: #2a2a2a;
@@ -515,7 +515,7 @@
             { code: "S-20", label: "Прокат листовой г/к 20 мм ГОСТ 19903-2015 С255" },
             { code: "S-25", label: "Прокат листовой г/к 25 мм ГОСТ 19903-2015 С255" },
             { code: "S-30", label: "Прокат листовой г/к 30 мм ГОСТ 19903-2015 С255" },
-            { code: "S-40", label: "Прокат листовой г/к 40 мм ГОСТ 19903-2015 С355" },
+            { code: "S-40", label: "Прокат листовой г/к 40 мм ГОСТ 19903-2015 С255" },
             ]);
 
             const pipeWall = [1.0, 1.2, 1.5, 2, 2.5, 3, 3.5, 4, 5, 6, 7, 8, 9, 10, 12];
@@ -738,7 +738,8 @@
                     <div class="grade-input-group">
                         <select class="metal-grade">
                             <option value="C255">С255</option>
-                            <option value="C345">09Г2С (+5%)</option>
+                            <option value="C345">С345 (+5%)</option>
+                            <option value="C355">С355 (+5%)</option>
                         </select>
                     </div>
                     <div class="del-btn" onclick="removeItem(this)"><span>&times;</span></div>
@@ -778,10 +779,13 @@
             typeSelect.addEventListener("change", () => {
                 let selectedText = typeSelect.options[typeSelect.selectedIndex].text;
                 
-                // Если выбрана марка 09Г2С, сразу подставляем её в текст
+                // Автоподстановка марки при выборе
                 if (gradeSelect.value === "C345") {
-                    selectedText = selectedText.replace("С255", "09Г2С").replace("C255", "09Г2С");
-                    if (!selectedText.includes("09Г2С")) selectedText += " (09Г2С)";
+                    selectedText = selectedText.replace(/С255|C255|С355|C355/g, "С345");
+                    if (!selectedText.includes("С345")) selectedText += " (С345)";
+                } else if (gradeSelect.value === "C355") {
+                    selectedText = selectedText.replace(/С255|C255|С345|C345/g, "С355");
+                    if (!selectedText.includes("С355")) selectedText += " (С355)";
                 }
                 
                 nameInput.value = selectedText;
@@ -793,14 +797,17 @@
 
             // Авто-замена марки стали в названии при переключении дропдауна
             gradeSelect.addEventListener("change", () => {
+                let val = nameInput.value;
                 if (gradeSelect.value === "C345") {
-                    nameInput.value = nameInput.value.replace("С255", "09Г2С").replace("C255", "09Г2С");
-                    if (!nameInput.value.includes("09Г2С")) {
-                        nameInput.value += " (09Г2С)";
-                    }
+                    val = val.replace(/С255|C255|С355|C355/g, "С345");
+                    if (!val.includes("С345")) val += " (С345)";
+                } else if (gradeSelect.value === "C355") {
+                    val = val.replace(/С255|C255|С345|C345/g, "С355");
+                    if (!val.includes("С355")) val += " (С355)";
                 } else {
-                    nameInput.value = nameInput.value.replace("09Г2С", "С255").replace(" (09Г2С)", "");
+                    val = val.replace(/С345|C345|С355|C355/g, "С255").replace(" (С255)", "");
                 }
+                nameInput.value = val;
             });
 
             nameInput.addEventListener("input", updateMainButtonState);
